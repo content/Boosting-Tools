@@ -20,6 +20,7 @@ else:
     print("[INFO] Taking a new screenshot")
     img = pyautogui.screenshot().convert("RGB")
 
+config = {}
 try:
     with open("./config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
@@ -27,12 +28,9 @@ except FileNotFoundError:
     print("[ERROR] config.json not found!")
     sys.exit(1)
 
-settings = config["settings"]
 cs_conf = config["cs"]
-adv_conf = config["advanced"]
+isInDebugMode = config["advanced"]["debug"]
 
-isInDebugMode = adv_conf["debug"]
-testMode = True
 
 csWindowWidth, csWindowHeight = cs_conf["width"], cs_conf["height"]
 
@@ -80,16 +78,7 @@ def test_pixel_analysis():
 
     draw = ImageDraw.Draw(img)
     
-    offsets = cs_conf["offsets"]
-    colors = adv_conf["colors"]
-    
-    excepted_background = colors["background"].lower()
-    expected_modal_title = colors["modal"]["titlebar"].lower()
-    expected_modal_content = colors["modal"]["content"].lower()
-    
-    print(f"[TEST] Expected background color: {excepted_background}")
-    print(f"[TEST] Expected modal titlebar color: {expected_modal_title}")
-    print(f"[TEST] Expected modal content color: {expected_modal_content}")
+    checks = cs_conf["checks"]
     
     # Test each client position
     for i in range(3):
@@ -101,55 +90,29 @@ def test_pixel_analysis():
             base_y = start_y + csWindowHeight * j
 
             client_id = f"Client[{i},{j}]"
-            
-            # Check if coordinates are within image bounds
-            if base_x + offsets["x"] >= img.width or base_y + offsets["y"]["modal"]["titlebar"] >= img.height:
-                print(f"[WARNING] {client_id} coordinates out of bounds")
-                continue
-            
-            # Check modal detection pixels
-            background_x = base_x + offsets["x"]
-            background_y = base_y + offsets["y"]["background"]
-            modal_title_x = base_x + offsets["x"]
-            modal_title_y = base_y + offsets["y"]["modal"]["titlebar"]
-            modal_content_x = base_x + offsets["x"]
-            modal_content_y = base_y + offsets["y"]["modal"]["content"]
-            
+
             try:
-                # Get pixel colors
-                r0, g0, b0 = img.getpixel((background_x, background_y))
-                r1, g1, b1 = img.getpixel((modal_title_x, modal_title_y))
-                r2, g2, b2 = img.getpixel((modal_content_x, modal_content_y))
-                
-                bg_hex = f"#{r0:02X}{g0:02X}{b0:02X}"
-                title_hex = f"#{r1:02X}{g1:02X}{b1:02X}"
-                content_hex = f"#{r2:02X}{g2:02X}{b2:02X}"
-                
                 print(f"[TEST] {client_id}:")
-                print(f"  Background pixel ({background_x},{background_y}): {bg_hex}")
-                print(f"  Title pixel ({modal_title_x},{modal_title_y}): {title_hex}")
-                print(f"  Content pixel ({modal_content_x},{modal_content_y}): {content_hex}")
-                
-                bg_distance = Utils.color_distance(bg_hex, excepted_background)
-                title_distance = Utils.color_distance(title_hex, expected_modal_title)
-                content_distance = Utils.color_distance(content_hex, expected_modal_content)
+                check_matches = []
+                for target_hex, position in checks.items():
+                    # Determine color distance
+                    r, g, b = img.getpixel(position[0], position[1])
+                    pixel_color = f"#{r:02X}{g:02X}{b:02X}"
 
-                print(f"  Color distances - Background: {bg_distance:.2f}, Title: {title_distance:.2f}, Content: {content_distance:.2f}")
+                    distance = Utils.color_distance(pixel_color, target_hex)
+                    match = Utils.is_color_similar(pixel_color, target_hex, threshold=15)
+                    check_matches.append(match)
 
-                draw.ellipse((background_x-DOT_SIZE, background_y-DOT_SIZE,
-                            background_x+DOT_SIZE, background_y+DOT_SIZE), fill="red")
-                draw.ellipse((modal_title_x-DOT_SIZE, modal_title_y-DOT_SIZE, 
-                            modal_title_x+DOT_SIZE, modal_title_y+DOT_SIZE), fill="red")
-                draw.ellipse((modal_content_x-DOT_SIZE, modal_content_y-DOT_SIZE, 
-                            modal_content_x+DOT_SIZE, modal_content_y+DOT_SIZE), fill="red")
+                    print(f" Color at position {position} (expected: {target_hex}: {pixel_color} [distance: {distance:.2f}] match: {match})")
+
+                    # Draw dot
+                    draw.ellipse((position[0]-DOT_SIZE, position[1]-DOT_SIZE,
+                                  position[0]+DOT_SIZE, position[1]+DOT_SIZE), fill="red")
+
+
+                modal_detected = all(check_matches)
                 
-                bg_match = Utils.is_color_similar(bg_hex, excepted_background, threshold=15)
-                title_match = Utils.is_color_similar(title_hex, expected_modal_title, threshold=15)
-                content_match = Utils.is_color_similar(content_hex, expected_modal_content, threshold=15)
-                
-                modal_detected = bg_match and title_match and content_match
-                
-                print(f"  Modal detected: {modal_detected} (bg: {bg_match}, title: {title_match}, content: {content_match})")
+                print(f"  Modal detected: {modal_detected}")
                 
                 region = img.crop((base_x, base_y, base_x + csWindowWidth, base_y + csWindowHeight))
                 region_draw = ImageDraw.Draw(region)
