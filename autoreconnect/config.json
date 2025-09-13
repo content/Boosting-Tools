@@ -1,0 +1,23 @@
+{
+    "settings": {
+        "cooldown": 10
+    },
+    "advanced": {
+        "debug": true
+    },
+    "cs": {
+        "width": 160,
+        "height": 160,
+        "starting": [8, 31],
+        "checks": {
+            "#000000": [95, 30],
+            "#272626": [95, 70],
+            "#2D2D2D": [95, 90]
+        },
+        "button_locations": {
+            "ok": [103, 90],
+            "friend": [155, 40],
+            "connect": [-27, 15]
+        }
+    }
+}
