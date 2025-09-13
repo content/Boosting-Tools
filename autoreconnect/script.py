@@ -15,8 +15,8 @@ csWindowWidth, csWindowHeight = cs_conf["width"], cs_conf["height"]
 while True:
     for i in range(3):
         for j in range(5):
-            start_x = cs_conf["starting"]["x"]
-            start_y = cs_conf["starting"]["y"]
+            start_x = cs_conf["starting"][0]
+            start_y = cs_conf["starting"][1]
 
             base_x = start_x + csWindowWidth * i
             base_y = start_y + csWindowHeight * j
