@@ -40,9 +40,7 @@ class Client:
     
     def join_friend(self):
         try:
-            for _ in range(5):
-                pyautogui.press('esc')
-                
+
             friend_button = cs_conf["button_locations"]["friend"]
             connect_button = cs_conf["button_locations"]["connect"]
             
@@ -50,10 +48,22 @@ class Client:
                 self.start_x + friend_button[0],
                 self.start_y + friend_button[1]
             ]
+            
+            
 
             if isInDebugMode:
                 print(f"[DEBUG] Starting join_friend for client at ({self.start_x}, {self.start_y})")
 
+            # Click the friend button to focus the window
+            Utils.click_relative(self.start_x, self.start_y, 
+                                friend_button[0], friend_button[1], 
+                                "friend_button")
+            sleep(0.5)
+
+            # Spam esc to close any open modals
+            for _ in range(5):
+                pyautogui.press('esc')
+            
             Utils.click_relative(self.start_x, self.start_y, 
                                 friend_button[0], friend_button[1], 
                                 "friend_button")
