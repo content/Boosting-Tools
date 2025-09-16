@@ -1,4 +1,5 @@
 from classes.Utils import Utils
+import pyautogui
 import json
 from time import sleep
 
@@ -39,7 +40,9 @@ class Client:
     
     def join_friend(self):
         try:
-            ok_button = cs_conf["button_locations"]["ok"]
+            for _ in range(5):
+                pyautogui.press('esc')
+                
             friend_button = cs_conf["button_locations"]["friend"]
             connect_button = cs_conf["button_locations"]["connect"]
             
@@ -50,11 +53,6 @@ class Client:
 
             if isInDebugMode:
                 print(f"[DEBUG] Starting join_friend for client at ({self.start_x}, {self.start_y})")
-            
-            Utils.click_relative(self.start_x, self.start_y, 
-                                ok_button[0], ok_button[1], 
-                                "ok_button")
-            sleep(0.5)
 
             Utils.click_relative(self.start_x, self.start_y, 
                                 friend_button[0], friend_button[1], 

@@ -17,7 +17,6 @@
             }
         ],
         "button_locations": {
-            "ok": [103, 90],
             "friend": [155, 40],
             "connect": [-27, 15]
         }
