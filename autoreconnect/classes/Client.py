@@ -17,7 +17,7 @@ class Client:
         self.start_y = start_y
         self.screenshot = screenshot
 
-    def is_modal_visible(self):
+    def is_in_lobby(self):
         checks = cs_conf["checks"]
 
         img = Utils.grab_region(self.start_x, self.start_y, csWindowWidth, csWindowHeight, self.screenshot)
@@ -26,17 +26,16 @@ class Client:
         if isInDebugMode:
             img.save(f"./client_regions/client_{int(self.start_x / csWindowWidth)}_{int(self.start_y / csWindowHeight)}.png")
         
+        for entry in checks:
+            results = []
+            for target_hex, position in entry.items():
+                pixel_color = Utils.get_pixel_hex(img, position[0], position[1])
+                results.append(Utils.is_color_similar(pixel_color, target_hex, threshold=15))
 
-        results = []
-        for target_hex, position in checks.items():
-            pixel_color = Utils.get_pixel_hex(img, position[0], position[1])
-            results.append(Utils.is_color_similar(pixel_color, target_hex, threshold=15))
+            if all(results):
+                return True
 
-        for result in results:
-            if not result:
-                return False
-
-        return True
+        return False
     
     def join_friend(self):
         try:
@@ -74,3 +73,5 @@ class Client:
             print(f"[ERROR] Missing configuration key: {e}")
         except Exception as e:
             print(f"[ERROR] Error in join_friend: {e}")
+
+        Utils.free_cursor()

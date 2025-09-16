@@ -23,7 +23,7 @@ while True:
 
             client = Client(base_x, base_y)
 
-            if client.is_modal_visible():
+            if client.is_in_lobby():
                 print("[INFO] Modal detected, attempting to join friend...")
                 client.join_friend()
 

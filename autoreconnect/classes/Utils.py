@@ -4,6 +4,8 @@ import pyautogui
 from time import sleep
 import json
 
+pyautogui.FAILSAFE = True
+
 config = json.load(open("./config.json", "r", encoding="utf-8"))
 isInDebugMode = config["advanced"]["debug"]
 settings = config["settings"]
@@ -74,3 +76,19 @@ class Utils:
             print(f"[DEBUG] Color similarity - Distance: {distance:.1f}, Threshold: {threshold}")
         
         return distance <= threshold
+    
+    @staticmethod
+    def free_cursor():
+        try:
+            screen_width, screen_height = pyautogui.size()
+            center_x = screen_width // 2
+            center_y = screen_height // 2
+
+            pyautogui.hotkey('win')
+            
+            sleep(1)
+
+            pyautogui.moveTo(center_x, center_y, duration=0.5)
+            pyautogui.click()
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
