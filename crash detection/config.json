@@ -1,5 +1,7 @@
 {
     "discord_id": "",
     "webhook_url": "",
+
+    "host": "",
     "port": 9000
 }

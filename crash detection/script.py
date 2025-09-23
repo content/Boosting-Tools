@@ -7,7 +7,7 @@ config = {}
 with open("config.json", "r", encoding="utf-8") as f:
     config = json.load(f)
 
-HOST = "127.0.0.1"
+HOST = config["host"]
 PORT = config["port"]
 
 discord_id = config["discord_id"]
@@ -32,28 +32,34 @@ async def send_ws_message(message: str):
     except Exception as e:
         print(f"[ERROR] Failed to send WebSocket message: {e}")
 
+
 try:
     asyncio.run(send_ws_message("ping")) 
 except ConnectionRefusedError:
     print("[ERROR] Failed to connect to websocket server. Are you running receiver.py on the other computer?")
     exit()
 
+print("[INFO] Successfully connected to websocket server.")
+
 while True:
-    cs2_pids = [p.pid for p in psutil.process_iter() if p.name().lower() == cs2_process_name]
-    cs2_client_count = len(cs2_pids)
+    try:
+        cs2_pids = [p.pid for p in psutil.process_iter() if p.name().lower() == cs2_process_name]
+        cs2_client_count = len(cs2_pids)
 
-    if cs2_client_count != expected_cs2_count:
-        if not has_sent_alert:
-            webhook = DiscordWebhook(url=webhook_url, content=f"<@{discord_id}> Not enough CS2 clients! Current count: {len(cs2_pids)} (Expected: {expected_cs2_count})")
-            response = webhook.execute()
+        if cs2_client_count != expected_cs2_count:
+            if not has_sent_alert:
+                webhook = DiscordWebhook(url=webhook_url, content=f"<@{discord_id}> Not enough CS2 clients! Current count: {len(cs2_pids)} (Expected: {expected_cs2_count})")
+                response = webhook.execute()
 
-            asyncio.run(send_ws_message(f"disconnect"))
-            has_sent_alert = True
+                asyncio.run(send_ws_message(f"disconnect"))
+                has_sent_alert = True
 
-            print("[INFO] Not enough CS2 clients! Sent alert to Discord.")
-    
-    elif has_sent_alert and cs2_client_count == expected_cs2_count:
-        has_sent_alert = False
-        print("[INFO] All CS2 clients are now running!")
+                print("[INFO] Not enough CS2 clients! Sent alert to Discord.")
+        
+        elif has_sent_alert and cs2_client_count == expected_cs2_count:
+            has_sent_alert = False
+            print("[INFO] All CS2 clients are now running!")
+    except Exception as e:
+        print(f"[ERROR] An error occurred: {e}")
 
     time.sleep(1)
