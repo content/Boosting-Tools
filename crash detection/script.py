@@ -1,5 +1,5 @@
 from discord_webhook import DiscordWebhook
-import pyautogui, time, psutil, json
+import time, psutil, json
 import asyncio
 import websockets
 
