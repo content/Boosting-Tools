@@ -27,8 +27,16 @@ async def send_ws_message(message: str):
     try:
         async with websockets.connect(uri) as ws:
             await ws.send(message)
+    except ConnectionRefusedError:
+        raise ConnectionRefusedError("Unable to connect to websocket server")
     except Exception as e:
         print(f"[ERROR] Failed to send WebSocket message: {e}")
+
+try:
+    asyncio.run(send_ws_message("ping")) 
+except ConnectionRefusedError:
+    print("[ERROR] Failed to connect to websocket server. Are you running receiver.py on the other computer?")
+    exit()
 
 while True:
     cs2_pids = [p.pid for p in psutil.process_iter() if p.name().lower() == cs2_process_name]
