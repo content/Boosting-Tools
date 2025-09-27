@@ -9,7 +9,7 @@ with open("config.json", "r", encoding="utf-8") as f:
 
 DISCONNECT_KEY = "k"
 
-HOST = config["host"]
+HOST = "0.0.0.0"
 PORT = config["port"]
 
 async def handler(ws):
