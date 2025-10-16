@@ -1,4 +1,6 @@
 from discord_webhook import DiscordWebhook
+from twilio.rest import Client
+
 import time, psutil, json
 import asyncio
 import websockets
@@ -9,6 +11,16 @@ with open("config.json", "r", encoding="utf-8") as f:
 
 HOST = config["host"]
 PORT = config["port"]
+
+TWILIO_PHONE_NUMBER = config["twilio"]["twilio_number"]
+PHONE_NUMBER = config["twilio"]["phone_number"]
+IS_TWILIO_ENABLED = config["twilio"]["enabled"]
+
+
+account_sid = config["twilio"]["account_sid"]
+auth_token = config["twilio"]["auth_token"]
+
+twilio = Client(account_sid, auth_token)
 
 discord_id = config["discord_id"]
 webhook_url = config["webhook_url"]
@@ -53,13 +65,24 @@ while True:
 
                 asyncio.run(send_ws_message(f"disconnect"))
                 has_sent_alert = True
-
+                
                 print("[INFO] Not enough CS2 clients! Sent alert to Discord.")
-        
+
+                if IS_TWILIO_ENABLED:
+                    call = twilio.calls.create(
+                        url="http://demo.twilio.com/docs/voice.xml",
+                        to=PHONE_NUMBER,
+                        from_=TWILIO_PHONE_NUMBER
+                    )
+
+                    if call:
+                        print(f"[INFO] Phone call has been initiated. (SID: {call.sid})")
+
         elif has_sent_alert and cs2_client_count == expected_cs2_count:
             has_sent_alert = False
             print("[INFO] All CS2 clients are now running!")
     except Exception as e:
+        print(e.__class__.__name__)
         print(f"[ERROR] An error occurred: {e}")
 
     time.sleep(1)
