@@ -16,7 +16,6 @@ TWILIO_PHONE_NUMBER = config["twilio"]["twilio_number"]
 PHONE_NUMBER = config["twilio"]["phone_number"]
 IS_TWILIO_ENABLED = config["twilio"]["enabled"]
 
-
 account_sid = config["twilio"]["account_sid"]
 auth_token = config["twilio"]["auth_token"]
 
@@ -24,6 +23,14 @@ twilio = Client(account_sid, auth_token)
 
 discord_id = config["discord_id"]
 webhook_url = config["webhook_url"]
+
+if not webhook_url or not HOST or not PORT or IS_TWILIO_ENABLED not in [True, False]:
+    print("[ERROR] Please make sure you have filled out the config.json file correctly.")
+    exit()
+
+if IS_TWILIO_ENABLED and ( not TWILIO_PHONE_NUMBER or not PHONE_NUMBER or not account_sid or not auth_token):
+    print("[ERROR] Please make sure you have filled out the Twilio section in config.json correctly.")
+    exit()
 
 expected_cs2_count = 15
 
