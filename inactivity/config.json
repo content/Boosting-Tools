@@ -1,0 +1,15 @@
+{
+    "account_name": "",
+    "password": "",
+
+    "target_steamid": "",
+    "interval_seconds": 1,
+    "inactive_treshold_minutes": 30,
+
+    "twilio": {
+        "account_sid": "",
+        "auth_token": "",
+        "twilio_number": "",
+        "phone_number": ""
+    }
+}
