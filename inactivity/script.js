@@ -35,6 +35,21 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const twilioClient = Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
+async function callNumber() {
+    const call = await twilioClient.calls.create({
+        url: "http://demo.twilio.com/docs/voice.xml",
+        to: PHONE_NUMBER,
+        from: TWILIO_NUMBER,
+    });
+
+    if(call) {
+        console.log(`[INFO] Twilio call initiated due to inactivity.(Call SID: ${call.sid})`);
+        hasCalled = true;
+    }
+
+    return call;
+}
+
 const client = new SteamUser();
 const csgo = new GlobalOffensive(client);
 
@@ -44,7 +59,6 @@ client.logOn({
     accountName: STEAM_USERNAME,
     password: STEAM_PASSWORD,
 });
-
 
 client.on('loggedOn', () => {
   console.log('[INFO] Logged into Steam as', client.steamID.getSteam3RenderedID());
@@ -103,6 +117,7 @@ let previousData = {
 };
 
 let isRunning = false; 
+let totalXPGained = 0;
 let hasCalled = false;
 
 async function interval() {
@@ -124,29 +139,30 @@ async function interval() {
 
             if(!hasCalled && diffMinutes >= INACTIVE_TRESHOLD_MINUTES) {
                 console.log(`[INFO] Player has been inactive for ${Math.floor(diffMinutes)} minutes. `);
-
-                const call = await twilioClient.calls.create({
-                    url: "http://demo.twilio.com/docs/voice.xml",
-                    to: PHONE_NUMBER,
-                    from: TWILIO_NUMBER,
-                });
-
-                if(call) {
-                    console.log(`[INFO] Twilio call initiated due to inactivity.(Call SID: ${call.sid})`);
-                    hasCalled = true;
-                }
+                await callNumber();
             }
-
         }
 
         if(overallXp !== previousData.xp) {
             const now = new Date();
+            const xpGained = overallXp - (previousData.xp || 0);
+                        
             console.log(`[INFO] Detected XP change. (${previousData.xp} -> ${overallXp}) [${now.toISOString().replace(/T/, ' ').replace(/\..+/, '')}]`);
+
+            if(previousData.xp !== null) {
+                totalXPGained += xpGained;
+            }
             
             previousData.updated_at = now;
             previousData.xp = overallXp;
-            hasCalled = false;
             
+            if(!hasCalled && profile.player_level == 40) {
+                console.log(`[INFO] Player has reached max level 40. Calling phone number.`);
+                await callNumber();
+                return;
+            }
+            
+            hasCalled = false;
         }
     } catch (error) {
         console.error('[ERROR] An error occurred during the interval:', error);
