@@ -3,7 +3,9 @@ import config from './config.js';
 import Utils from './classes/Utils.js';
 import SteamUser from 'steam-user';
 
-if(!config.friends.target) {
+const TARGET = config.friends.target;
+
+if(!TARGET) {
     throw new Error("The 'target' field in config.js is required. Please set it to the SteamID64 of the user you want to add as a friend.");
 }
 
@@ -26,9 +28,8 @@ for(const account of accounts) {
     client.on('loggedOn', (result) => {
         console.log(`[INFO] Logged in as ${account.username}`);
         clients.push(client);
-
-        if(!config.target) return;
-        client.addFriend(config.target);
+		
+        client.addFriend(TARGET);
     });
 
     client.on('friendRelationship', (steamId, relationship) => {
