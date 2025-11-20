@@ -1,0 +1,2 @@
+// Lines that starts with "//" will be ignored.
+// Format: accountname:password
