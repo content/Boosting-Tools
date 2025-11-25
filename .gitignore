@@ -355,3 +355,5 @@ autoreconnect/test_output.png
 autoreconnect/*.png
 autoreconnect/*/image*
 autoreconnect/*/client_*
+
+accounts.txt

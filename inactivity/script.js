@@ -14,6 +14,9 @@ const TARGET_STEAMID = config.target_steamid;
 const INTERVAL_SECONDS = config.interval_seconds || 30;
 const INACTIVE_TRESHOLD_MINUTES = config.inactive_treshold_minutes ?? 30;
 
+const MAX_ALLOWED_SKIPPED_INTERVALS_IN_A_ROW = config.max_allowed_skipped_intervals_in_a_row || 10;
+const MAX_ALLOWED_ERRORS_IN_A_ROW = config.max_allowed_errors_in_a_row || 5;
+
 const TWILIO_ACCOUNT_SID = config.twilio.account_sid || '';
 const TWILIO_AUTH_TOKEN = config.twilio.auth_token || '';
 const TWILIO_NUMBER = config.twilio.twilio_number || '';
@@ -36,6 +39,8 @@ process.on('unhandledRejection', (reason, promise) => {
 const twilioClient = Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
 async function callNumber() {
+    if(hasCalled) return null;
+
     const call = await twilioClient.calls.create({
         url: "http://demo.twilio.com/docs/voice.xml",
         to: PHONE_NUMBER,
@@ -112,6 +117,7 @@ csgo.on('playersProfile', (data) => {
 });
 
 let previousData = {
+    lastPhoneCallAt: null,
     updated_at: null,
     xp: null
 };
@@ -120,35 +126,49 @@ let isRunning = false;
 let totalXPGained = 0;
 let hasCalled = false;
 
+let skippedIntervalInARow = 0;
+let errorsInARow = 0;
+
+async function checkCallInactivity() {
+    if(errorsInARow >= MAX_ALLOWED_ERRORS_IN_A_ROW || skippedIntervalInARow >= MAX_ALLOWED_SKIPPED_INTERVALS_IN_A_ROW) {
+        console.log('[INFO] Max allowed errors or skipped intervals reached. Calling phone number due to potential inactivity.');
+        await callNumber();
+    }
+}
+
 async function interval() {
     if (isRunning) {
         console.log('[WARN] Previous interval is still running. Skipping this interval.');
+        skippedIntervalInARow += 1;
+        
+        await checkCallInactivity();
         return;
     }
 
     isRunning = true;
-
+    
     try {
         const profile = await getPlayerProfile(TARGET_STEAMID);
         const overallXp = profile.player_level * 5000 + (profile.player_cur_xp - 327680000);
-
+        
+        
         if(previousData.updated_at !== null && previousData.xp !== null) {
             const lastUpdate = previousData.updated_at;
             const now = new Date();
             const diffMinutes = (now - lastUpdate) / (60 * 1000);
-
+            
             if(!hasCalled && diffMinutes >= INACTIVE_TRESHOLD_MINUTES) {
                 console.log(`[INFO] Player has been inactive for ${Math.floor(diffMinutes)} minutes. `);
                 await callNumber();
             }
         }
-
+        
         if(overallXp !== previousData.xp) {
             const now = new Date();
             const xpGained = overallXp - (previousData.xp || 0);
-                        
+            
             console.log(`[INFO] Detected XP change. (${previousData.xp} -> ${overallXp}) [${now.toISOString().replace(/T/, ' ').replace(/\..+/, '')}]`);
-
+            
             if(previousData.xp !== null) {
                 totalXPGained += xpGained;
             }
@@ -164,8 +184,14 @@ async function interval() {
             
             hasCalled = false;
         }
+
+        skippedIntervalInARow = 0;
+        errorsInARow = 0;
     } catch (error) {
         console.error('[ERROR] An error occurred during the interval:', error);
+        errorsInARow += 1;
+
+        await checkCallInactivity();
     } finally {
         isRunning = false;
     }
