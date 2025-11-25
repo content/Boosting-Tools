@@ -1,7 +1,0 @@
-{
-  "type": "module",
-  "dependencies": {
-    "blessed": "^0.1.81",
-    "steam-user": "^5.2.3"
-  }
-}
