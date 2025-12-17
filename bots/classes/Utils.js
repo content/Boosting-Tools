@@ -17,4 +17,8 @@ export default class Utils {
             return [];
         }
     }
+
+    static sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 }
