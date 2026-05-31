@@ -1,7 +1,7 @@
 import { REST, Routes } from 'discord.js';
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 
-import TwilioClient from './Twilio.js';
+import TwilioClient from './TwilioClient.js';
 
 const commands = [
     {
