@@ -27,12 +27,12 @@ export default class DiscordClient {
 
             if (interaction.commandName === 'call') {
                 if(!this.phoneNumber) {
-                    await interaction.reply('Phone number not configured.');
+                    await interaction.reply('Phone number not configured.', { ephemeral: true });
                     return;
                 }
                 
                 await TwilioClient.client.call(this.phoneNumber, '[INFO] Manually triggered call.', false);
-                await interaction.reply('Call has been triggered successfully.');
+                await interaction.reply('Call has been triggered successfully.', { ephemeral: true });
             }
         });
 

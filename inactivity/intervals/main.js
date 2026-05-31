@@ -2,6 +2,8 @@ import TwilioClient from '../classes/TwilioClient.js';
 import SteamCSClient from '../classes/SteamCSClient.js';
 import Config from '../classes/Config.js';
 
+const phoneNumber = Config.TWILIO.TARGET_PHONE_NUMBER;
+
 let previousData = {
     updated_at: null,
     xp: null,
@@ -36,8 +38,6 @@ export default async function mainInterval() {
 
     isRunning = true;
 
-    const phoneNumber = Config.TWILIO.TARGET_PHONE_NUMBER;
-
     try {
         const twilioClient = TwilioClient.client;
         const steamCSClient = SteamCSClient.client;
@@ -46,7 +46,7 @@ export default async function mainInterval() {
             throw new Error('Clients have not been initialized yet.');
         }
 
-        const profile = await steamCSClient.getPlayerProfile(steamCSClient.targetSteamId);
+        const profile = await steamCSClient.getPlayerProfile(Config.STEAM.TARGET_STEAMID);
         const overallXP = profile.player_level * 5000 + (profile.player_cur_xp - 327680000);
 
         const hasUpdated = previousData.updated_at !== null && previousData.xp !== null;
