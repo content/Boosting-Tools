@@ -1,6 +1,0 @@
-{
-  "type": "module",
-  "dependencies": {
-    "steam-user": "^5.2.3"
-  }
-}
