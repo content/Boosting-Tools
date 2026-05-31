@@ -62,7 +62,8 @@ export default class SteamCSClient {
 
             this.csgo.on('connectedToGC', () => {
                 console.log(`[INFO] Connected to CS:GO Game Coordinator. Starting inactivity monitoring for ${this.targetSteamId}.`);
-                IntervalManager.add(mainInterval, Config.INTERVAL.CHECK_INTERVAL_SECONDS * 1000);
+
+                IntervalManager.add(mainInterval, Config.INTERVAL.SECONDS * 1000);
             });
         });
     }
