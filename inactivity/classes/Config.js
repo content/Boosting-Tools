@@ -1,4 +1,5 @@
-import config from '../config.json' with { type: "json" };
+import dotenv from 'dotenv';
+dotenv.config();
 
 const env = process.env;
 
