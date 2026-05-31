@@ -1,29 +1,31 @@
 import config from '../config.json' with { type: "json" };
 
+const env = process.env;
+
 export default class Config {
     static STEAM = {
-        STEAM_USERNAME: config.account_name,
-        STEAM_PASSWORD: config.password,
-        TARGET_STEAMID: config.target_steamid
+        STEAM_USERNAME: env.STEAM_USERNAME,
+        STEAM_PASSWORD: env.STEAM_PASSWORD,
+        TARGET_STEAMID: env.TARGET_STEAMID
     };
 
     static TWILIO = {
-        ACCOUNT_SID: config.twilio.account_sid,
-        AUTH_TOKEN: config.twilio.auth_token,
-        TWILIO_NUMBER: config.twilio.twilio_number,
-        TARGET_PHONE_NUMBER: config.twilio.phone_number,
+        ACCOUNT_SID: env.TWILIO_ACCOUNT_SID,
+        AUTH_TOKEN: env.TWILIO_AUTH_TOKEN,
+        TWILIO_NUMBER: env.TWILIO_NUMBER,
+        TARGET_PHONE_NUMBER: env.TARGET_PHONE_NUMBER,
     };
 
     static DISCORD = {
-        TOKEN: config.discord.token,
-        CLIENT_ID: config.discord.client_id,
+        TOKEN: env.DISCORD_TOKEN,
+        CLIENT_ID: env.DISCORD_CLIENT_ID,
     };
     
     static INTERVAL = {
-        SECONDS: config.interval_seconds || 30,
-        INACTIVE_THRESHOLD_MINUTES: config.inactive_treshold_minutes || 30,
-        MAX_ALLOWED_SKIPPED_INTERVALS_CONSECUTIVE: config.max_allowed_skipped_intervals_in_a_row || 10,
-        MAX_ALLOWED_ERRORS_CONSECUTIVE: config.max_allowed_errors_in_a_row || 5,
+        SECONDS: env.INTERVAL_SECONDS || 30,
+        INACTIVE_THRESHOLD_MINUTES: env.INACTIVE_TRESHOLD_MINUTES || 30,
+        MAX_ALLOWED_SKIPPED_INTERVALS_CONSECUTIVE: env.MAX_ALLOWED_SKIPPED_INTERVALS_CONSECUTIVE || 10,
+        MAX_ALLOWED_ERRORS_CONSECUTIVE: env.MAX_ALLOWED_ERRORS_CONSECUTIVE || 5,
     }
 
     static validate() {
